@@ -1,4 +1,4 @@
-#! /home/kaya/.local/share/pipx/venvs/cc1101/bin/python
+#! /home/USER/.local/share/pipx/venvs/cc1101/bin/python
 
 # This script currently only works for files using EV1527 or BinRAW modulation
 # TODO: Add support for more modulations
@@ -11,20 +11,19 @@ from time import sleep
 import cc1101
 
 parser = ArgumentParser(
-	prog='pi-tx',
-	description='Transmit signals specified by Flipper Zero .sub files',
+	prog='pi-sub-tx',
+	description='Transmit signals specified by Flipper Zero .sub files.\nCurrently only RAW and EV1527 ("Princeton") formats are supported',
 )
 
-parser.add_argument('files', type=Path, nargs='+')
-parser.add_argument('-r', '--reps', type=int, default=1)
+parser.add_argument('files', type=Path, nargs='+', help='the Flipper `.sub` files to read signals from')
+parser.add_argument('-r', '--reps', type=int, default=1, help='the number of times to repeat each signal')
 
 args = parser.parse_args(argv[1:])
 
 demod = lambda x: {'0':'1000', '1':'1110'}[x]
 hexadec = lambda x: int(''.join(x), 16)
 
-n = 0
-while n < args.reps:
+for _ in range(args.reps):
 	for file in args.files:
 		with open(file, mode='r') as conts:
 			lines = conts.readlines()
@@ -60,6 +59,5 @@ while n < args.reps:
 			transceiver.set_output_power((0, 0xC0))  # OOK modulation: (off, on)
 			transceiver.transmit(data)
 			print(transceiver)
-			
+
 		# sleep(0.05)
-	n += 1
